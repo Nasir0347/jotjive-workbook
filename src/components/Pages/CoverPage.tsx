@@ -19,7 +19,7 @@ export const CoverPage: React.FC<CoverPageProps> = ({
         <div className="max-w-3xl w-full">
           {/* Centered Patterned Panel */}
           <div
-            className="bg-white rounded-[3rem] sm:rounded-[4rem] px-6 py-12 sm:px-12 sm:py-16 shadow-[0_20px_50px_rgba(0,0,0,0.5)] relative group overflow-hidden flex flex-col items-center text-center mx-auto border-[4px] border-[#E1EAF4]"
+            className="bg-white rounded-[2.5rem] sm:rounded-[4rem] px-4 py-10 sm:px-12 sm:py-16 shadow-[0_20px_50px_rgba(0,0,0,0.5)] relative group overflow-hidden flex flex-col items-center text-center mx-auto border-[4px] border-[#E1EAF4]"
           >
             {/* Pattern Overlay */}
             <div
@@ -107,10 +107,10 @@ export const CoverPage: React.FC<CoverPageProps> = ({
               <div className="flex flex-col items-center animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
                 <button
                   onClick={onStart}
-                  className="rounded-[2.5rem] bg-[#2B78BE] text-white border-[5px] border-[#22639E] px-12 py-3 sm:px-16 sm:py-4 hover:bg-[#22639E] hover:border-[#1C5082] hover:scale-105 transition-all duration-300 flex items-center justify-center gap-3 mx-auto shadow-xl active:scale-95 mt-2"
+                  className="rounded-[2rem] sm:rounded-[2.5rem] bg-[#2B78BE] text-white border-[4px] sm:border-[5px] border-[#22639E] px-6 py-2.5 sm:px-16 sm:py-4 hover:bg-[#22639E] hover:border-[#1C5082] hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 sm:gap-3 mx-auto shadow-xl active:scale-95 mt-2 w-auto max-w-full"
                 >
-                  <span className="text-xl sm:text-2xl text-white animate-pulse relative top-[-1px]">✦</span>
-                  <span className="text-lg sm:text-2xl font-black tracking-[0.15em] uppercase whitespace-nowrap">START LEARNING</span>
+                  <span className="text-lg sm:text-2xl text-white animate-pulse relative top-[-1px]">✦</span>
+                  <span className="text-[13px] xs:text-base sm:text-2xl font-black tracking-[0.05em] sm:tracking-[0.15em] uppercase whitespace-nowrap">START LEARNING</span>
                 </button>
               </div>
             </div>
@@ -119,16 +119,16 @@ export const CoverPage: React.FC<CoverPageProps> = ({
       </main>
 
       {/* Minimal Copyright */}
-      <div className="absolute bottom-6 sm:bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 w-full text-center">
-        <div className="text-white/50 text-sm sm:text-base font-medium tracking-wide">
+      <div className="absolute bottom-4 sm:bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 w-[90%] sm:w-full text-center">
+        <div className="text-white/50 text-xs sm:text-base font-medium tracking-wide">
           <a href="https://www.JotJive.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
             www.JotJive.com
           </a>
         </div>
-        <div className="text-white/20 text-[10px] sm:text-[11px] font-black uppercase tracking-[0.2em] sm:tracking-[0.4em] whitespace-nowrap mt-1">
+        <div className="text-white/20 text-[9px] sm:text-[11px] font-black uppercase tracking-[0.1em] sm:tracking-[0.4em] whitespace-nowrap mt-1">
           © Copyright 2026 JotJive, LLC
         </div>
-        <div className="text-white/20 text-[10px] sm:text-[11px] font-black uppercase tracking-[0.2em] sm:tracking-[0.4em] whitespace-nowrap">
+        <div className="text-white/20 text-[9px] sm:text-[11px] font-black uppercase tracking-[0.1em] sm:tracking-[0.4em] whitespace-nowrap">
           Patent Pending – All Rights Reserved
         </div>
       </div>
