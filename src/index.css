@@ -1,5 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap');
-
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Dancing+Script:wght@700&family=Quicksand:wght@700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -19,21 +18,23 @@ body {
   overflow-x: hidden;
   -webkit-tap-highlight-color: transparent;
   height: 100%;
+  overscroll-behavior-y: none;
+  /* Prevents pull-to-refresh on mobile */
 }
 
 body {
-  font-family: 'Quicksand', sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   background-color: #ffffff;
-  color: #1a1a1a;
+  color: #0c0c0c;
 }
 
 /* Chalkboard Background with Sketches Overlay */
 .chalkboard-hero {
-  background-color: #1a1a1a;
+  background-color: #0c0c0c;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-  background-size: 40px 40px;
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
   position: relative;
 }
 
@@ -70,15 +71,27 @@ body {
 
 @layer utilities {
   .shadow-tactile {
-    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2) !important;
   }
 
   .shadow-tactile-blue {
-    box-shadow: 0 4px 0 #075985;
+    box-shadow: 0 4px 0 #0369a1 !important;
   }
 
   .shadow-tactile-red {
-    box-shadow: 0 4px 0 #991b1b;
+    box-shadow: 0 4px 0 #b91c1c !important;
+  }
+
+  .shadow-tactile-green {
+    box-shadow: 0 4px 0 #15803d !important;
+  }
+
+  .shadow-tactile-yellow {
+    box-shadow: 0 4px 0 #b45309 !important;
+  }
+
+  .shadow-tactile-magenta {
+    box-shadow: 0 4px 0 #a21caf !important;
   }
 
   .animate-float {
@@ -139,13 +152,13 @@ body {
   }
 }
 
-/* Colorful pill buttons with responsive scaling */
+/* Colorful pill buttons with SaaS vibrant colors */
 .pill-button {
-  @apply px-5 py-2.5 sm:px-8 sm:py-3.5 rounded-full font-black text-[10px] sm:text-[11px] uppercase tracking-wider transition-all active:scale-95 shadow-tactile active:shadow-none active:translate-y-[2px] flex items-center justify-center gap-2 hover:scale-105 hover:brightness-110;
+  @apply px-5 py-2.5 sm:px-8 sm:py-3.5 rounded-full font-extrabold text-[10px] sm:text-[11px] uppercase tracking-widest transition-all active:scale-95 shadow-tactile active:shadow-none active:translate-y-[2px] flex items-center justify-center gap-2 hover:scale-[1.03] hover:brightness-110;
 }
 
 .pill-button-secondary {
-  @apply bg-white text-slate-700 border border-slate-200 hover:bg-slate-50;
+  @apply bg-white text-slate-800 border-2 border-slate-100 hover:bg-slate-50;
 }
 
 /* Glassmorphism for professional SaaS feel */

@@ -44,9 +44,9 @@ export const PracticePage: React.FC<PageProps> = ({ page }) => {
       </div>
 
       {/* Practice indicator */}
-      <div className="fixed top-4 right-4 sm:top-6 sm:right-6 glass-panel text-slate-600 px-4 py-1.5 sm:px-5 sm:py-2 rounded-full text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.1em] shadow-sm border border-gray-200 animate-fade-in-up z-30">
-        <span className="opacity-50 mr-1.5">•</span>
-        Practice Page
+      <div className="fixed top-4 right-4 sm:top-6 sm:right-6 bg-white border-2 border-slate-100 text-slate-800 px-4 py-2 sm:px-6 sm:py-2.5 rounded-full text-[10px] sm:text-[11px] font-black uppercase tracking-widest shadow-tactile-blue animate-fade-in-up z-30 flex items-center gap-2">
+        <span className="w-2 h-2 rounded-full bg-saas-yellow animate-pulse" />
+        PRACTICE PAGE
       </div>
     </div>
   );

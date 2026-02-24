@@ -47,6 +47,7 @@ export interface Workbook {
 export interface Point {
   x: number;
   y: number;
+  pressure?: number; // Added for stylus support
 }
 
 export interface HandwritingStroke {
@@ -106,6 +107,7 @@ export interface CanvasOverlayProps {
 export interface NavigationBarProps {
   onNext?: () => void;
   onBack?: () => void;
+  onGoToCover?: () => void;
   canGoNext: boolean;
   canGoBack: boolean;
   currentPage: number;

@@ -65,29 +65,57 @@ export const CanvasOverlay: React.FC<CanvasOverlayProps> = ({
     }
   }, [mode, initialStrokes, isReady, width, height]);
 
-  // Draw a single stroke
+  // Draw a single stroke with smoothing (ballpoint pen effect)
   const drawStroke = useCallback((ctx: CanvasRenderingContext2D, stroke: HandwritingStroke) => {
     if (stroke.points.length < 2) return;
 
-    ctx.beginPath();
-    ctx.strokeStyle = '#000000';
-    ctx.lineWidth = 2.5;
+    // Deep ballpoint blue color with very slight opacity for realism
+    ctx.strokeStyle = 'rgba(12, 36, 97, 0.9)';
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
 
-    stroke.points.forEach((point, index) => {
-      if (index === 0) {
-        ctx.moveTo(point.x, point.y);
-      } else {
-        ctx.lineTo(point.x, point.y);
-      }
-    });
+    const pts = stroke.points;
 
-    ctx.stroke();
+    // Base properties
+    const MIN_WIDTH = 1.0;
+    const MAX_WIDTH = 4.0;
+
+    // We draw segment by segment to allow dynamic line widths based on pressure
+    for (let i = 0; i < pts.length - 1; i++) {
+        const currentRef = pts[i];
+        const nextRef = pts[i + 1];
+
+        // Smoothly interpolate the width based on the pressure of the upcoming point
+        // If pressure is undefined, use the default 0.5
+        const pressure = nextRef.pressure !== undefined ? nextRef.pressure : 0.5;
+        const targetWidth = MIN_WIDTH + (pressure * (MAX_WIDTH - MIN_WIDTH));
+
+        ctx.beginPath();
+        // Fallback smoothing: if no pressure device, just keep width steady
+        ctx.lineWidth = targetWidth;
+
+        if (i === 0) {
+            ctx.moveTo(currentRef.x, currentRef.y);
+            ctx.lineTo(nextRef.x, nextRef.y);
+        } else {
+            // Bezier curve using midpoint for smoothness
+            const prevRef = pts[i - 1];
+            const midPoint1 = { x: (prevRef.x + currentRef.x) / 2, y: (prevRef.y + currentRef.y) / 2 };
+            const midPoint2 = { x: (currentRef.x + nextRef.x) / 2, y: (currentRef.y + nextRef.y) / 2 };
+            
+            ctx.moveTo(midPoint1.x, midPoint1.y);
+            ctx.quadraticCurveTo(currentRef.x, currentRef.y, midPoint2.x, midPoint2.y);
+        }
+
+        ctx.stroke();
+    }
+
   }, []);
 
   // Get canvas coordinates from pointer event with normalization for visual scaling
   const getCanvasPoint = useCallback((e: React.PointerEvent): Point => {
     const canvas = canvasRef.current;
-    if (!canvas) return { x: 0, y: 0 };
+    if (!canvas) return { x: 0, y: 0, pressure: e.pressure || 0.5 };
 
     const rect = canvas.getBoundingClientRect();
 
@@ -98,7 +126,8 @@ export const CanvasOverlay: React.FC<CanvasOverlayProps> = ({
 
     return {
       x: (e.clientX - rect.left) * scaleX,
-      y: (e.clientY - rect.top) * scaleY
+      y: (e.clientY - rect.top) * scaleY,
+      pressure: e.pointerType === 'pen' ? (e.pressure || 0.5) : 0.5 // Default pressure for mouse/finger is 0.5
     };
   }, [width, height]);
 
@@ -109,6 +138,15 @@ export const CanvasOverlay: React.FC<CanvasOverlayProps> = ({
     // Stylus-only check
     if (!allowFinger && e.pointerType !== 'pen') {
       return;
+    }
+
+    // Palm Rejection Check: if touch is enabled but geometry suggests a palm instead of a finger
+    if (allowFinger && e.pointerType === 'touch') {
+      // Typical finger has width/height < 20-30. If it's very large, it's likely a resting palm.
+      // e.pressure could also be used for pens, but this is specific for touch palm rejection.
+      if (e.width && e.width > 40 || e.height && e.height > 40) {
+        return;
+      }
     }
 
     e.preventDefault();
@@ -162,20 +200,23 @@ export const CanvasOverlay: React.FC<CanvasOverlayProps> = ({
   return (
     <canvas
       ref={canvasRef}
-      className={`absolute top-0 left-0 ${mode === 'write' ? 'cursor-crosshair' : 'cursor-default'}`}
+      className={`absolute top-0 left-0 ${mode === 'write' ? 'cursor-crosshair' : 'cursor-default'} no-select`}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerLeave={handlePointerUp}
       onPointerCancel={handlePointerUp}
+      onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); }} // Prevent long-press menu on mobile
       style={{
-        touchAction: 'none',
+        touchAction: 'none', // Strictly prevent browser scrolling
         pointerEvents: mode === 'write' ? 'auto' : 'none',
         zIndex: 10,
         maxWidth: '100%',
         height: 'auto',
         display: 'block',
-        WebkitTouchCallout: 'none'
+        WebkitTouchCallout: 'none',
+        userSelect: 'none',
+        WebkitUserSelect: 'none'
       }}
     />
   );

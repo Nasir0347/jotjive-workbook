@@ -217,6 +217,10 @@ function WorkbookApp() {
     }
   }, [currentPageIndex, pages, clearStrokes, clearStrokesRange, dispatch]);
 
+  const handleGoToCover = useCallback(() => {
+    dispatch({ type: 'GO_TO_PAGE', payload: 0 });
+  }, [dispatch]);
+
   const handleStart = useCallback(() => {
     dispatch({ type: 'GO_TO_NEXT' });
   }, [dispatch]);
@@ -278,6 +282,7 @@ function WorkbookApp() {
         <NavigationBar
           onNext={handleNext}
           onBack={handleBack}
+          onGoToCover={handleGoToCover}
           canGoNext={currentPageIndex < pages.length - 1}
           canGoBack={currentPageIndex > 0}
           currentPage={currentPageIndex}
