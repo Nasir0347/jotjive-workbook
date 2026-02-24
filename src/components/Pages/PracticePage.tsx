@@ -18,11 +18,12 @@ export const PracticePage: React.FC<PageProps> = ({ page }) => {
     setDimensions({ width, height });
   }, []);
 
-  const availableWidth = window.innerWidth * 0.96;
-  const availableHeight = window.innerHeight - 160;
+  const isPC = window.innerWidth >= 1024;
+  const availableWidth = window.innerWidth * (isPC ? 0.9 : 0.96);
+  const availableHeight = isPC ? 2000 : window.innerHeight - 160; // Much larger on PC
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen pb-32 sm:pb-40 sketched-bg overflow-hidden pt-safe">
+    <div className="flex flex-col items-center justify-center min-h-screen pb-32 sm:pb-40 sketched-bg pt-safe">
       <div className="relative bg-white shadow-xl rounded-[1.5rem] overflow-hidden m-1 sm:m-6 border border-gray-100 max-w-[98%] sm:max-w-none">
         <PDFRenderer
           pdfUrl={page.source}
