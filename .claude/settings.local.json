@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(ls:*)",
+      "Bash(dir:*)",
+      "Bash(mv:*)",
+      "Bash(rmdir:*)",
+      "Bash(curl:*)",
+      "Bash(pdfinfo:*)",
+      "Bash(unzip:*)",
+      "Bash(cp:*)",
+      "Bash(netstat:*)",
+      "Bash(xargs -I {} taskkill //PID {} //F)",
+      "Bash(lsof:*)",
+      "Bash(xargs -r taskkill //PID //F)",
+      "Bash(taskkill:*)",
+      "Bash(mkdir:*)",
+      "Bash(comm:*)"
+    ]
+  }
+}

@@ -3,19 +3,16 @@
 // ============================================
 
 export enum PageType {
-  COVER = 'COVER',
   T = 'T',      // Teaching Page
-  P = 'P',      // Practice Page  
+  P = 'P',      // Practice Page
   Q = 'Q',      // Question Page
   A = 'A',      // Answer Page
   G = 'G',      // Game Page
-  FLASHCARD = 'FLASHCARD',  // Flashcard Front
-  FLASHCARD_A = 'FLASHCARD_A' // Flashcard Back/Answer
+  EMPTY = 'EMPTY' // Empty Page (no marker detected)
 }
 
 export enum DeviceType {
-  TABLET = 'TABLET',
-  SMARTPHONE = 'SMARTPHONE'
+  TABLET = 'TABLET'
 }
 
 export interface WorkbookConfig {
@@ -30,7 +27,6 @@ export interface WorkbookPage {
   pageNumber: number;
   source: string;
   allowWriting: boolean;
-  relatedPage?: string;  // For Q→A linkage
 }
 
 export interface Workbook {
@@ -61,11 +57,21 @@ export interface HandwritingStroke {
 // SESSION TYPES
 // ============================================
 
+export type ContentMode = 'workbook' | 'flashcard-tablet' | 'flashcard-phone';
+
 export interface SessionState {
   currentPageIndex: number;
   handwritingData: Map<string, HandwritingStroke[]>;
-  navigationHistory: number[];
   allowTouch: boolean;
+  pageType: PageType;
+  activePageLabel: string;
+  originalPageLabel: string;
+  handwritingImages: Map<string, string>; // pageId -> base64
+  isSettingsOpen: boolean;
+  nativeLanguage: string; // NL - Native Language
+  targetLanguage: string; // TL - Target Language
+  isEraserMode: boolean; // Eraser mode toggle
+  contentMode: ContentMode; // Content mode: workbook or flashcard
 }
 
 export type SessionAction =
@@ -75,8 +81,13 @@ export type SessionAction =
   | { type: 'SET_STROKES'; payload: { pageId: string; strokes: HandwritingStroke[] } }
   | { type: 'CLEAR_STROKES'; payload: { pageId: string } }
   | { type: 'CLEAR_ALL_STROKES' }
-  | { type: 'CLEAR_STROKES_RANGE'; payload: { fromIndex: number; toIndex: number; pages: WorkbookPage[] } }
-  | { type: 'TOGGLE_TOUCH' };
+  | { type: 'TOGGLE_TOUCH' }
+  | { type: 'SET_PAGE_INFO'; payload: { pageType: PageType; activePageLabel: string; originalPageLabel: string } }
+  | { type: 'SET_PAGE_IMAGE'; payload: { pageId: string; image: string } }
+  | { type: 'TOGGLE_SETTINGS' }
+  | { type: 'SET_LANGUAGES'; payload: { nativeLanguage: string; targetLanguage: string } }
+  | { type: 'TOGGLE_ERASER' }
+  | { type: 'SET_CONTENT_MODE'; payload: ContentMode };
 
 // ============================================
 // COMPONENT PROP TYPES
@@ -90,48 +101,37 @@ export interface PDFRendererProps {
   containerHeight?: number;
   onRenderComplete?: () => void;
   onDimensionsChange?: (width: number, height: number) => void;
+  onPageInfoDetected?: (pageType: PageType, label: string) => void;
   onError?: (error: Error) => void;
 }
 
 export interface CanvasOverlayProps {
   pageId: string;
-  mode: 'write' | 'read' | 'redisplay';
+  mode: 'write' | 'read' | 'redisplay' | 'erase';
   initialStrokes?: HandwritingStroke[];
   allowInput?: boolean;
-  allowFinger?: boolean;
   onStrokesChange?: (strokes: HandwritingStroke[]) => void;
   width?: number;
   height?: number;
+  backgroundImage?: string;
 }
 
 export interface NavigationBarProps {
   onNext?: () => void;
   onBack?: () => void;
-  onGoToCover?: () => void;
+  onGoToStart?: () => void;
+  onErasePage?: () => void;
+  onEraseBook?: () => void;
+  onEmail?: (pageId: string) => void;
+  onPower?: () => void;
+  onTranslate?: (lang: string) => void;
+  onCheck?: () => void;
+  onGoldenKey?: () => void;
   canGoNext: boolean;
   canGoBack: boolean;
   currentPage: number;
   totalPages: number;
   pageType?: PageType;
+  activePageLabel?: string;
+  isSimpleMode?: boolean;
 }
-
-export interface PageProps {
-  page: WorkbookPage;
-  allPages?: WorkbookPage[];
-}
-
-// ============================================
-// INPUT CONFIGURATION
-// ============================================
-
-export interface InputConfig {
-  stylusOnly: boolean;
-  allowFinger: boolean;
-  pressureSensitive: boolean;
-}
-
-export const DEFAULT_INPUT_CONFIG: InputConfig = {
-  stylusOnly: true,
-  allowFinger: false,
-  pressureSensitive: false
-};

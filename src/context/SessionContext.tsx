@@ -3,7 +3,8 @@ import {
   SessionState,
   SessionAction,
   HandwritingStroke,
-  WorkbookPage
+  PageType,
+  ContentMode
 } from '../types';
 
 // ============================================
@@ -13,8 +14,16 @@ import {
 const initialState: SessionState = {
   currentPageIndex: 0,
   handwritingData: new Map(),
-  navigationHistory: [],
-  allowTouch: false
+  allowTouch: false,
+  pageType: PageType.EMPTY, // Default to EMPTY
+  activePageLabel: '',
+  originalPageLabel: '',
+  handwritingImages: new Map(),
+  isSettingsOpen: false,
+  nativeLanguage: 'AEN', // Default to American English
+  targetLanguage: 'AEN', // Default to American English
+  isEraserMode: false, // Default to write mode
+  contentMode: 'workbook' // Default to workbook mode
 };
 
 // ============================================
@@ -26,22 +35,19 @@ function sessionReducer(state: SessionState, action: SessionAction): SessionStat
     case 'GO_TO_NEXT':
       return {
         ...state,
-        currentPageIndex: state.currentPageIndex + 1,
-        navigationHistory: [...state.navigationHistory, state.currentPageIndex]
+        currentPageIndex: state.currentPageIndex + 1
       };
 
     case 'GO_TO_PREVIOUS':
       return {
         ...state,
-        currentPageIndex: Math.max(0, state.currentPageIndex - 1),
-        navigationHistory: state.navigationHistory.slice(0, -1)
+        currentPageIndex: Math.max(0, state.currentPageIndex - 1)
       };
 
     case 'GO_TO_PAGE':
       return {
         ...state,
-        currentPageIndex: action.payload,
-        navigationHistory: [...state.navigationHistory, state.currentPageIndex]
+        currentPageIndex: action.payload
       };
 
     case 'SET_STROKES': {
@@ -59,21 +65,38 @@ function sessionReducer(state: SessionState, action: SessionAction): SessionStat
     case 'CLEAR_ALL_STROKES':
       return { ...state, handwritingData: new Map() };
 
-    case 'CLEAR_STROKES_RANGE': {
-      const newData = new Map(state.handwritingData);
-      const { fromIndex, toIndex, pages } = action.payload;
-      // Clear all pages in the range
-      for (let i = fromIndex; i >= toIndex; i--) {
-        const pageId = pages[i]?.id;
-        if (pageId) {
-          newData.delete(pageId);
-        }
-      }
-      return { ...state, handwritingData: newData };
-    }
-
     case 'TOGGLE_TOUCH':
       return { ...state, allowTouch: !state.allowTouch };
+
+    case 'SET_PAGE_INFO':
+      return {
+        ...state,
+        pageType: action.payload.pageType,
+        activePageLabel: action.payload.activePageLabel,
+        originalPageLabel: action.payload.originalPageLabel
+      };
+
+    case 'SET_PAGE_IMAGE': {
+      const newImages = new Map(state.handwritingImages);
+      newImages.set(action.payload.pageId, action.payload.image);
+      return { ...state, handwritingImages: newImages };
+    }
+
+    case 'TOGGLE_SETTINGS':
+      return { ...state, isSettingsOpen: !state.isSettingsOpen };
+
+    case 'SET_LANGUAGES':
+      return {
+        ...state,
+        nativeLanguage: action.payload.nativeLanguage,
+        targetLanguage: action.payload.targetLanguage
+      };
+
+    case 'TOGGLE_ERASER':
+      return { ...state, isEraserMode: !state.isEraserMode };
+
+    case 'SET_CONTENT_MODE':
+      return { ...state, contentMode: action.payload };
 
     default:
       return state;
@@ -90,9 +113,14 @@ interface SessionContextType {
   getStrokes: (pageId: string) => HandwritingStroke[];
   setStrokes: (pageId: string, strokes: HandwritingStroke[]) => void;
   clearStrokes: (pageId: string) => void;
-  clearStrokesRange: (fromIndex: number, toIndex: number, pages: WorkbookPage[]) => void;
-  hasStrokes: (pageId: string) => boolean;
   toggleTouch: () => void;
+  setPageInfo: (pageType: PageType, activePageLabel: string) => void;
+  setPageImage: (pageId: string, image: string) => void;
+  getPageImage: (pageId: string) => string | undefined;
+  toggleSettings: () => void;
+  setLanguages: (nativeLanguage: string, targetLanguage: string) => void;
+  toggleEraser: () => void;
+  setContentMode: (mode: ContentMode) => void;
 }
 
 const SessionContext = createContext<SessionContextType | null>(null);
@@ -116,16 +144,67 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     dispatch({ type: 'CLEAR_STROKES', payload: { pageId } });
   }, []);
 
-  const clearStrokesRange = useCallback((fromIndex: number, toIndex: number, pages: WorkbookPage[]) => {
-    dispatch({ type: 'CLEAR_STROKES_RANGE', payload: { fromIndex, toIndex, pages } });
-  }, []);
-
-  const hasStrokes = useCallback((pageId: string): boolean => {
-    return state.handwritingData.has(pageId) && state.handwritingData.get(pageId)!.length > 0;
-  }, [state.handwritingData]);
-
   const toggleTouch = useCallback(() => {
     dispatch({ type: 'TOGGLE_TOUCH' });
+  }, []);
+
+  const setPageInfo = useCallback((pageType: PageType, activePageLabel: string) => {
+    // Convert page type to readable label for header
+    let readableLabel = '';
+
+    // Check if it's an empty page (no label detected)
+    if (pageType === PageType.EMPTY || activePageLabel === 'EMPTY' || !activePageLabel) {
+      readableLabel = 'EMPTY PAGE';
+    } else {
+      switch (pageType) {
+        case PageType.T:
+          readableLabel = 'TEACHING PAGE';
+          break;
+        case PageType.P:
+          readableLabel = 'PRACTICE PAGE';
+          break;
+        case PageType.Q:
+          readableLabel = 'QUESTION PAGE';
+          break;
+        case PageType.A:
+          readableLabel = 'ANSWER PAGE';
+          break;
+        case PageType.G:
+          readableLabel = 'GAME PAGE';
+          break;
+        default:
+          readableLabel = 'EMPTY PAGE';
+      }
+    }
+
+    dispatch({
+      type: 'SET_PAGE_INFO',
+      payload: {
+        pageType,
+        activePageLabel: readableLabel,
+        originalPageLabel: activePageLabel === 'EMPTY' ? '...' : activePageLabel // Keep original like "T-1", "Q-3" or "..." for empty
+      }
+    });
+  }, []);
+
+  const setPageImage = useCallback((pageId: string, image: string) => {
+    dispatch({ type: 'SET_PAGE_IMAGE', payload: { pageId, image } });
+  }, []);
+
+  const getPageImage = useCallback((pageId: string): string | undefined => {
+    return state.handwritingImages.get(pageId);
+  }, [state.handwritingImages]);
+
+  const setLanguages = useCallback((nativeLanguage: string, targetLanguage: string) => {
+    dispatch({ type: 'SET_LANGUAGES', payload: { nativeLanguage, targetLanguage } });
+  }, []);
+
+  const toggleEraser = useCallback(() => {
+    dispatch({ type: 'TOGGLE_ERASER' });
+  }, []);
+
+  const setContentMode = useCallback((mode: ContentMode) => {
+    dispatch({ type: 'SET_CONTENT_MODE', payload: mode });
   }, []);
 
   return (
@@ -135,9 +214,14 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
       getStrokes,
       setStrokes,
       clearStrokes,
-      clearStrokesRange,
-      hasStrokes,
-      toggleTouch
+      toggleTouch,
+      setPageInfo,
+      setPageImage,
+      getPageImage,
+      toggleSettings: () => dispatch({ type: 'TOGGLE_SETTINGS' }),
+      setLanguages,
+      toggleEraser,
+      setContentMode
     }}>
       {children}
     </SessionContext.Provider>
