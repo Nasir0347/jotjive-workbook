@@ -6,38 +6,55 @@ interface TabletOnlyProps {
     children: React.ReactNode;
 }
 
+// Detect if device is a real tablet or phone using User Agent
+const detectDeviceType = () => {
+    const ua = navigator.userAgent.toLowerCase();
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    const maxDimension = Math.max(width, height);
+    const minDimension = Math.min(width, height);
+
+    // Check if it's a mobile device (phone or tablet)
+    const isMobileDevice = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile|tablet/i.test(ua);
+
+    // Check if it's specifically a tablet
+    const isTabletUA = /ipad|android(?!.*mobile)|tablet/i.test(ua);
+
+    // Check if it's a phone
+    const isPhoneUA = /iphone|ipod|android.*mobile|blackberry|iemobile|opera mini/i.test(ua);
+
+    // Desktop detection: Large screen AND not a mobile device
+    const isDesktop = !isMobileDevice || maxDimension >= 1280;
+
+    // Phone detection: Small screen OR phone user agent
+    const isPhone = isPhoneUA || (minDimension < 768 && isMobileDevice);
+
+    // Tablet detection: Tablet UA OR (medium screen AND mobile device AND not phone)
+    const isTablet = (isTabletUA || (minDimension >= 768 && minDimension < 1280 && isMobileDevice)) && !isPhone && !isDesktop;
+
+    return { isDesktop, isTablet, isPhone };
+};
+
 export const TabletOnly: React.FC<TabletOnlyProps> = ({ children }) => {
     const [deviceInfo, setDeviceInfo] = React.useState(() => {
-        const width = window.innerWidth;
-        const height = window.innerHeight;
-        const isPortrait = height > width;
-
-        // Detect device type based on screen size
-        // Desktop: width >= 1280px OR height >= 1280px (large screens)
-        // Tablet: 768px <= width < 1280px AND height < 1280px
-        // Phone: width < 768px
-        const isDesktop = width >= 1280 || height >= 1280;
-        const isPhone = width < 768 && height < 768;
-        const isTablet = !isDesktop && !isPhone;
-
+        const { isDesktop, isTablet, isPhone } = detectDeviceType();
+        const isPortrait = window.innerHeight > window.innerWidth;
         return { isDesktop, isTablet, isPhone, isPortrait };
     });
 
     React.useEffect(() => {
         const handleResize = () => {
-            const width = window.innerWidth;
-            const height = window.innerHeight;
-            const isPortrait = height > width;
-
-            const isDesktop = width >= 1280 || height >= 1280;
-            const isPhone = width < 768 && height < 768;
-            const isTablet = !isDesktop && !isPhone;
-
+            const { isDesktop, isTablet, isPhone } = detectDeviceType();
+            const isPortrait = window.innerHeight > window.innerWidth;
             setDeviceInfo({ isDesktop, isTablet, isPhone, isPortrait });
         };
 
         window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
+        window.addEventListener('orientationchange', handleResize);
+        return () => {
+            window.removeEventListener('resize', handleResize);
+            window.removeEventListener('orientationchange', handleResize);
+        };
     }, []);
 
     // If on phone, show "Tablet Required" message
