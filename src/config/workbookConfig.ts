@@ -26,7 +26,7 @@ const FULL_MODE_CATALOG: WorkbookEntry[] = grades.flatMap(grade =>
             const id = `JJ${grade}${subject}${volume}`;
             return {
                 id,
-                cover: `/covers/${subject}/${id}C.png`,
+                cover: `/covers/${subject}/${id}C.webp`,
                 pdf: `/workbooks/${subject}/${id}.pdf`,
             };
         })
@@ -46,7 +46,7 @@ const SIMPLE_MODE_CATALOG: WorkbookEntry[] = [
         const num = String(i + 1).padStart(2, '0');
         return {
             id: `JJA-${num}`,
-            cover: `/covers/A/JJA-${num}C.png`,
+            cover: `/covers/A/JJA-${num}C.webp`,
             pdf: `/workbooks/A/JJA-${num}.pdf`
         };
     }),
@@ -55,7 +55,7 @@ const SIMPLE_MODE_CATALOG: WorkbookEntry[] = [
         const num = String(i + 1).padStart(2, '0');
         return {
             id: `JJR-${num}`,
-            cover: `/covers/R/JJR-${num}C.png`,
+            cover: `/covers/R/JJR-${num}C.webp`,
             pdf: `/workbooks/R/JJR-${num}.pdf`
         };
     }),
@@ -64,7 +64,7 @@ const SIMPLE_MODE_CATALOG: WorkbookEntry[] = [
         const num = String(i + 1).padStart(2, '0');
         return {
             id: `JJL-${num}`,
-            cover: `/covers/L/JJL-${num}C.png`,
+            cover: `/covers/L/JJL-${num}C.webp`,
             pdf: `/workbooks/L/JJL-${num}.pdf`
         };
     }),
@@ -73,7 +73,7 @@ const SIMPLE_MODE_CATALOG: WorkbookEntry[] = [
         const num = String(i).padStart(2, '0');
         return {
             id: `JJFR-${num}`,
-            cover: `/covers/FR/JJFR-${num}C.png`,
+            cover: `/covers/FR/JJFR-${num}C.webp`,
             pdf: `/workbooks/FR/JJFR-${num}.pdf`
         };
     }),
@@ -82,7 +82,7 @@ const SIMPLE_MODE_CATALOG: WorkbookEntry[] = [
         const num = String(i + 1).padStart(2, '0');
         return {
             id: `JJFA-${num}`,
-            cover: `/covers/FA/JJFA-${num}C.png`,
+            cover: `/covers/FA/JJFA-${num}C.webp`,
             pdf: `/workbooks/FA/JJFA-${num}.pdf`
         };
     }),
@@ -91,7 +91,7 @@ const SIMPLE_MODE_CATALOG: WorkbookEntry[] = [
         const num = String(i + 1).padStart(2, '0');
         return {
             id: `JJSEA-${num}`,
-            cover: `/covers/SEA/JJSEA-${num}C.png`,
+            cover: `/covers/SEA/JJSEA-${num}C.webp`,
             pdf: `/workbooks/SEA/JJSEA-${num}.pdf`
         };
     })

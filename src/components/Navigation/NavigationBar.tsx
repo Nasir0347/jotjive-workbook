@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faArrowLeft,
@@ -17,14 +17,14 @@ import { useSession } from '../../context/SessionContext';
 import { PageLabel } from '../Pages/PageLabel';
 import { LanguageDropdown } from '../Language/LanguageDropdown';
 
-// Tooltip wrapper component
+// Tooltip wrapper component - memoized to prevent re-renders
 const TooltipButton: React.FC<{
   onClick: () => void;
   disabled?: boolean;
   tooltip: string;
   children: React.ReactNode;
   className?: string;
-}> = ({ onClick, disabled, tooltip, children, className = '' }) => (
+}> = memo(({ onClick, disabled, tooltip, children, className = '' }) => (
   <button
     onClick={onClick}
     disabled={disabled}
@@ -36,9 +36,11 @@ const TooltipButton: React.FC<{
       <span className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></span>
     </span>
   </button>
-);
+));
 
-export const NavigationBar: React.FC<NavigationBarProps & { isSimpleMode?: boolean }> = ({
+TooltipButton.displayName = 'TooltipButton';
+
+export const NavigationBar: React.FC<NavigationBarProps & { isSimpleMode?: boolean }> = memo(({
   onNext,
   onBack,
   onErasePage,
@@ -323,4 +325,6 @@ export const NavigationBar: React.FC<NavigationBarProps & { isSimpleMode?: boole
       </div>
     </>
   );
-};
+});
+
+NavigationBar.displayName = 'NavigationBar';

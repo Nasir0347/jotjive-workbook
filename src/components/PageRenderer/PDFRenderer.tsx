@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, memo, useMemo } from 'react';
 import * as pdfjs from 'pdfjs-dist';
 import { PDFRendererProps, PageType } from '../../types';
 
 // Set up PDF.js worker - use CDN without ?import
 pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.mjs`;
 
-export const PDFRenderer: React.FC<PDFRendererProps> = ({
+export const PDFRenderer: React.FC<PDFRendererProps> = memo(({
   pdfUrl,
   pageNumber = 1,
   scale: propScale,
@@ -20,6 +20,9 @@ export const PDFRenderer: React.FC<PDFRendererProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+
+  // Cache DPR to avoid recalculating
+  const dpr = useMemo(() => window.devicePixelRatio || 1, []);
 
   useEffect(() => {
     let isCancelled = false;
@@ -41,15 +44,12 @@ export const PDFRenderer: React.FC<PDFRendererProps> = ({
         const canvas = canvasRef.current;
         if (!canvas) return;
 
-        const context = canvas.getContext('2d');
+        const context = canvas.getContext('2d', { alpha: false });
         if (!context) return;
 
         // Calculate dynamic scale if container dimensions are provided
         const unscaledViewport = page.getViewport({ scale: 1 });
         let finalScale = propScale || 1.5;
-
-        console.log('[PDFRenderer] Container dimensions:', { containerWidth, containerHeight });
-        console.log('[PDFRenderer] PDF native dimensions:', { width: unscaledViewport.width, height: unscaledViewport.height });
 
         if (containerWidth || containerHeight) {
           // If only width is provided (height=0 or undefined), scale to fit width (landscape mode)
@@ -57,17 +57,14 @@ export const PDFRenderer: React.FC<PDFRendererProps> = ({
           if (containerWidth && containerWidth > 0 && (!containerHeight || containerHeight === 0)) {
             // Landscape: fit to width, let height overflow
             finalScale = containerWidth / unscaledViewport.width;
-            console.log('[PDFRenderer] LANDSCAPE MODE - Fitting to width:', containerWidth, 'Scale:', finalScale);
           } else if (containerHeight && containerHeight > 0 && (!containerWidth || containerWidth === 0)) {
             // Portrait: fit to height, let width adjust
             finalScale = containerHeight / unscaledViewport.height;
-            console.log('[PDFRenderer] PORTRAIT MODE - Fitting to height:', containerHeight, 'Scale:', finalScale);
           } else if (containerWidth && containerWidth > 0 && containerHeight && containerHeight > 0) {
             // Both provided: use fit-to-contain logic (legacy)
             const scaleW = containerWidth / unscaledViewport.width;
             const scaleH = containerHeight / unscaledViewport.height;
             finalScale = Math.min(scaleW, scaleH);
-            console.log('[PDFRenderer] BOTH DIMENSIONS - Using fit-to-contain. Scale:', finalScale);
           }
 
           // Apply any additional scale multiplier if provided
@@ -78,7 +75,6 @@ export const PDFRenderer: React.FC<PDFRendererProps> = ({
         const viewport = page.getViewport({ scale: finalScale });
 
         // Handle high-DPI displays
-        const dpr = window.devicePixelRatio || 1;
         canvas.width = viewport.width * dpr;
         canvas.height = viewport.height * dpr;
         canvas.style.width = `${viewport.width}px`;
@@ -98,55 +94,55 @@ export const PDFRenderer: React.FC<PDFRendererProps> = ({
           viewport: viewport
         };
 
-        console.log(`[PDFRenderer] Rendering page ${pageNumber} at scale ${finalScale}`);
         await page.render(renderContext).promise;
-        console.log(`[PDFRenderer] Page ${pageNumber} rendered successfully`);
 
-        // --- NEW: PAGE TYPE DETECTION ---
-        try {
-          const textContent = await page.getTextContent();
+        // --- PAGE TYPE DETECTION (optimized) ---
+        if (onPageInfoDetected) {
+          try {
+            const textContent = await page.getTextContent();
 
-          // Look for text at the bottom of the page (bottom 100 units usually covers the footer)
-          // Pattern: [T/P/Q/A/G]-[Number]
-          const labelPattern = /([TPQAG])-(\d+)/;
-          let detectedType: PageType | null = null;
-          let detectedLabel = '';
+            // Look for text at the bottom of the page (bottom 100 units usually covers the footer)
+            // Pattern: [T/P/Q/A/G]-[Number]
+            const labelPattern = /([TPQAG])-(\d+)/;
+            let detectedType: PageType | null = null;
+            let detectedLabel = '';
 
-          for (const item of textContent.items) {
-            if ('str' in item) {
-              const text = item.str.trim();
-              const transform = item.transform; // [a, b, c, d, e, f] where f is y-coord
-              const y = transform[5];
+            for (const item of textContent.items) {
+              if ('str' in item) {
+                const text = item.str.trim();
+                const transform = item.transform; // [a, b, c, d, e, f] where f is y-coord
+                const y = transform[5];
 
-              // Check if text matches pattern AND is at the bottom of the page
-              // PDF coordinates: (0,0) is bottom-left. So y < 100 is the bottom footer area.
-              if (labelPattern.test(text) && y < 100) {
-                const match = text.match(labelPattern);
-                if (match) {
-                  const typeLetter = match[1];
-                  detectedLabel = text;
+                // Check if text matches pattern AND is at the bottom of the page
+                // PDF coordinates: (0,0) is bottom-left. So y < 100 is the bottom footer area.
+                if (labelPattern.test(text) && y < 100) {
+                  const match = text.match(labelPattern);
+                  if (match) {
+                    const typeLetter = match[1];
+                    detectedLabel = text;
 
-                  switch (typeLetter) {
-                    case 'T': detectedType = PageType.T; break;
-                    case 'P': detectedType = PageType.P; break;
-                    case 'Q': detectedType = PageType.Q; break;
-                    case 'A': detectedType = PageType.A; break;
-                    case 'G': detectedType = PageType.G; break;
+                    switch (typeLetter) {
+                      case 'T': detectedType = PageType.T; break;
+                      case 'P': detectedType = PageType.P; break;
+                      case 'Q': detectedType = PageType.Q; break;
+                      case 'A': detectedType = PageType.A; break;
+                      case 'G': detectedType = PageType.G; break;
+                    }
+                    break;
                   }
-                  break;
                 }
               }
             }
-          }
 
-          if (detectedType && onPageInfoDetected) {
-            onPageInfoDetected(detectedType, detectedLabel);
-          } else if (onPageInfoDetected) {
-            // No page type detected, set as EMPTY page type
-            onPageInfoDetected(PageType.EMPTY, 'EMPTY');
+            if (detectedType) {
+              onPageInfoDetected(detectedType, detectedLabel);
+            } else {
+              // No page type detected, set as EMPTY page type
+              onPageInfoDetected(PageType.EMPTY, 'EMPTY');
+            }
+          } catch (ocrErr) {
+            console.warn('Page type detection failed:', ocrErr);
           }
-        } catch (ocrErr) {
-          console.warn('Page type detection failed:', ocrErr);
         }
         // --------------------------------
 
@@ -171,7 +167,7 @@ export const PDFRenderer: React.FC<PDFRendererProps> = ({
     return () => {
       isCancelled = true;
     };
-  }, [pdfUrl, pageNumber, propScale, containerWidth, containerHeight, onRenderComplete, onError, onDimensionsChange, onPageInfoDetected]);
+  }, [pdfUrl, pageNumber, propScale, containerWidth, containerHeight, onRenderComplete, onError, onDimensionsChange, onPageInfoDetected, dpr]);
 
   if (error) {
     return (
@@ -202,4 +198,6 @@ export const PDFRenderer: React.FC<PDFRendererProps> = ({
       />
     </div>
   );
-};
+});
+
+PDFRenderer.displayName = 'PDFRenderer';

@@ -1,4 +1,4 @@
-import { useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useLayoutEffect, useCallback, useRef, lazy, Suspense } from 'react';
 import { Routes, Route, useParams, useNavigate } from 'react-router-dom';
 import { SessionProvider, useSession } from './context/SessionContext';
 import {
@@ -12,10 +12,6 @@ import { PDFRenderer } from './components/PageRenderer/PDFRenderer';
 import { CanvasOverlay, CanvasOverlayRef } from './components/Handwriting/CanvasOverlay';
 import { NavigationBar } from './components/Navigation/NavigationBar';
 import { InputSettingsModal } from './components/Handwriting/InputSettings';
-import { LandingPage } from './components/Pages/LandingPage';
-import { WorkbookSelector } from './components/Pages/WorkbookSelector';
-import { WrapperScreen } from './components/Pages/WrapperScreen';
-import { CoverScreen } from './components/Pages/CoverScreen';
 import { LandscapeOnly } from './components/Layout/LandscapeOnly';
 import { TabletOnly } from './components/Layout/TabletOnly';
 import { WORKBOOK_CATALOG } from './config/workbookConfig';
@@ -24,6 +20,18 @@ import { isSimpleMode } from './config/categoryDetector';
 import * as pdfjsLib from 'pdfjs-dist';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrashCan } from '@fortawesome/free-solid-svg-icons';
+
+// Lazy load route components for code splitting
+const WorkbookSelector = lazy(() => import('./components/Pages/WorkbookSelector').then(m => ({ default: m.WorkbookSelector })));
+const WrapperScreen = lazy(() => import('./components/Pages/WrapperScreen').then(m => ({ default: m.WrapperScreen })));
+const CoverScreen = lazy(() => import('./components/Pages/CoverScreen').then(m => ({ default: m.CoverScreen })));
+
+// Loading fallback component
+const LoadingFallback = () => (
+  <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white/80 backdrop-blur-sm">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+  </div>
+);
 
 // ============================================
 // WORKBOOK PAGE BUILDER
@@ -508,13 +516,15 @@ function WorkbookViewer() {
 function App() {
   return (
     <SessionProvider>
-      <Routes>
-        <Route path="/" element={<WorkbookSelector />} />
-        <Route path="/select" element={<WorkbookSelector />} />
-        <Route path="/workbook/:id/wrapper" element={<WrapperScreen />} />
-        <Route path="/workbook/:id/cover" element={<CoverScreen />} />
-        <Route path="/workbook/:id/viewer" element={<WorkbookViewer />} />
-      </Routes>
+      <Suspense fallback={<LoadingFallback />}>
+        <Routes>
+          <Route path="/" element={<WorkbookSelector />} />
+          <Route path="/select" element={<WorkbookSelector />} />
+          <Route path="/workbook/:id/wrapper" element={<WrapperScreen />} />
+          <Route path="/workbook/:id/cover" element={<CoverScreen />} />
+          <Route path="/workbook/:id/viewer" element={<WorkbookViewer />} />
+        </Routes>
+      </Suspense>
     </SessionProvider>
   );
 }

@@ -17,7 +17,13 @@
       "Bash(xargs -r taskkill //PID //F)",
       "Bash(taskkill:*)",
       "Bash(mkdir:*)",
-      "Bash(comm:*)"
+      "Bash(comm:*)",
+      "Bash(npm install:*)",
+      "Bash(vercel:*)",
+      "Bash(du:*)",
+      "Bash(find:*)",
+      "Bash(convert:*)",
+      "Bash(node:*)"
     ]
   }
 }

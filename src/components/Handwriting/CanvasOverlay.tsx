@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback, useState, useImperativeHandle, forwardRef } from 'react';
+import { useEffect, useRef, useCallback, useState, useImperativeHandle, forwardRef, memo } from 'react';
 import { CanvasOverlayProps, HandwritingStroke, Point } from '../../types';
 import { useSession } from '../../context/SessionContext';
 
@@ -7,7 +7,7 @@ export interface CanvasOverlayRef {
   toDataURL: () => string;
 }
 
-export const CanvasOverlay = forwardRef<CanvasOverlayRef, CanvasOverlayProps>(({
+export const CanvasOverlay = memo(forwardRef<CanvasOverlayRef, CanvasOverlayProps>(({
   mode,
   initialStrokes = [],
   allowInput = true,
@@ -21,6 +21,8 @@ export const CanvasOverlay = forwardRef<CanvasOverlayRef, CanvasOverlayProps>(({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isReady, setIsReady] = useState(false);
   const strokesRef = useRef<HandwritingStroke[]>(initialStrokes);
+  const backgroundImageRef = useRef<HTMLImageElement | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
 
   // Expose methods to parent
   useImperativeHandle(ref, () => ({
@@ -314,6 +316,8 @@ export const CanvasOverlay = forwardRef<CanvasOverlayRef, CanvasOverlayProps>(({
       }}
     />
   );
-});
+}));
+
+CanvasOverlay.displayName = 'CanvasOverlay';
 
 export default CanvasOverlay;

@@ -240,6 +240,7 @@ export const WorkbookSelector: React.FC = () => {
                                     <img
                                         src={wb.cover}
                                         alt={`${wb.id} cover`}
+                                        loading="lazy"
                                         className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                                         onError={(e) => {
                                             const target = e.target as HTMLImageElement;
