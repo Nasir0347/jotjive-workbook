@@ -7,8 +7,12 @@ interface TabletOnlyProps {
 }
 
 export const TabletOnly: React.FC<TabletOnlyProps> = ({ children }) => {
-    const [isTabletOrDesktop, setIsTabletOrDesktop] = React.useState(
-        window.innerWidth >= 768 // 768px is typical tablet breakpoint
+    const [isPhone, setIsPhone] = React.useState(
+        window.innerWidth < 768 // Less than 768px is phone
+    );
+
+    const [isDesktop, setIsDesktop] = React.useState(
+        window.innerWidth >= 1024 // 1024px and above is desktop
     );
 
     const [isPortrait, setIsPortrait] = React.useState(
@@ -17,7 +21,8 @@ export const TabletOnly: React.FC<TabletOnlyProps> = ({ children }) => {
 
     React.useEffect(() => {
         const handleResize = () => {
-            setIsTabletOrDesktop(window.innerWidth >= 768);
+            setIsPhone(window.innerWidth < 768);
+            setIsDesktop(window.innerWidth >= 1024);
             setIsPortrait(window.innerHeight > window.innerWidth);
         };
 
@@ -26,7 +31,7 @@ export const TabletOnly: React.FC<TabletOnlyProps> = ({ children }) => {
     }, []);
 
     // If on phone (< 768px), show "Tablet Required" message
-    if (!isTabletOrDesktop) {
+    if (isPhone) {
         return (
             <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-saas-blue to-blue-700 flex items-center justify-center p-6">
                 <div className="text-center text-white max-w-md">
@@ -45,8 +50,13 @@ export const TabletOnly: React.FC<TabletOnlyProps> = ({ children }) => {
         );
     }
 
-    // If on tablet/desktop but in landscape mode, show "Rotate to Portrait" message
-    if (isTabletOrDesktop && !isPortrait) {
+    // If on desktop (>= 1024px), allow any orientation
+    if (isDesktop) {
+        return <>{children}</>;
+    }
+
+    // If on tablet (768px - 1023px) and in landscape mode, show "Rotate to Portrait" message
+    if (!isPortrait) {
         return (
             <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-saas-blue to-blue-700 flex items-center justify-center p-6">
                 <div className="text-center text-white max-w-md">
