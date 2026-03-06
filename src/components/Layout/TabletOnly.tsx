@@ -57,9 +57,9 @@ export const TabletOnly: React.FC<TabletOnlyProps> = ({ children }) => {
 
     console.log('Current Device Info:', deviceInfo);
 
-    // If on phone, show "Tablet Required" message
-    if (deviceInfo.isPhone) {
-        console.log('Showing: Tablet Required (Phone detected)');
+    // If on phone OR desktop, show "Tablet Required" message
+    if (deviceInfo.isPhone || deviceInfo.isDesktop) {
+        console.log('Showing: Tablet Required (Phone or Desktop detected)');
         return (
             <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-saas-blue to-blue-700 flex items-center justify-center p-6">
                 <div className="text-center text-white max-w-md">
@@ -68,20 +68,14 @@ export const TabletOnly: React.FC<TabletOnlyProps> = ({ children }) => {
                     </div>
                     <h2 className="text-3xl font-black mb-4">Tablet Required</h2>
                     <p className="text-xl font-semibold opacity-90 mb-6">
-                        This workbook is designed for tablets and desktop devices.
+                        This workbook is designed for tablets Only.
                     </p>
                     <p className="text-lg font-medium opacity-80">
-                        Please use a tablet or computer to access this content.
+                        Please use a tablet Portrait mode to access this content.
                     </p>
                 </div>
             </div>
         );
-    }
-
-    // If on desktop, allow any orientation
-    if (deviceInfo.isDesktop) {
-        console.log('Showing: Content (Desktop detected)');
-        return <>{children}</>;
     }
 
     // If on tablet and in landscape mode, show "Rotate to Portrait" message
