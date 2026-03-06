@@ -1,132 +1,65 @@
-# JotJive Interactive Workbook Shell
+# JotJive Workbook
 
-A React + TypeScript application for interactive handwriting workbooks with PDF rendering, stylus input, and session-based navigation.
+A modern, interactive digital workbook application for kids with handwriting support, built with React, TypeScript, and Vite.
 
-## Features
+## 🌟 Features
 
-- 📄 **PDF Rendering** - Renders workbook pages using PDF.js
-- ✏️ **Stylus Input** - Handwriting capture with stylus-first support
-- 🔄 **Q→A Navigation** - Question pages link to answer pages with handwriting redisplay
-- 🧹 **Auto-Clear** - Back navigation clears handwriting from backed-over pages
-- 💾 **Session-Only Storage** - No database persistence (in-memory only)
-- 📱 **Responsive Design** - Optimized for tablets and smartphones
+### 📚 Multiple Content Types
+- **Workbooks**: Grades 1-6 with subjects (Language Arts, Math, Science, Social Studies)
+- **Simple Mode**: PreK, Kindergarten, Life Skills, French, Special Education
+- **Flashcards**: Tablet and Phone formats
 
-## Quick Start
+### ✍️ Handwriting Support
+- Canvas-based handwriting with stylus and touch support
+- Palm rejection for natural writing experience
+- Eraser mode for corrections
+- Save handwriting across sessions
 
-### 1. Install Dependencies
+### 🎯 Smart Page Detection
+- Automatic page type detection (Teaching, Practice, Question, Answer, Game)
+- Question-to-Answer page image transfer
+- Simple mode for non-graded content
+
+### 📱 Device Optimization
+- **Workbooks**: Tablet/Desktop only (768px+)
+- **Tablet Flashcards**: Tablet/Desktop only
+- **Phone Flashcards**: Landscape mode required
+- Fully responsive design
+
+### 🌍 Multi-Language Support
+- 90+ language flags
+- Native and target language selection
+- Language dropdown in navigation
+
+### 🎨 Modern UI/UX
+- Wrapper screen with branding
+- Cover screen with catalog info
+- Animated backgrounds
+- Smooth transitions and animations
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js 18+
+- npm or yarn
+
+### Installation
 
 ```bash
+# Clone the repository
+git clone https://github.com/Nasir0347/jotjive-workbook.git
+
+# Navigate to project directory
 cd jotjive-workbook
+
+# Install dependencies
 npm install
-```
 
-### 2. Add PDF Files
-
-Place the workbook PDF files in `public/workbooks/JJ05SS02/`:
-- `cover.png` - Cover image
-- `T-2.pdf` - Teaching page 2
-- `T-3.pdf` - Teaching page 3
-- `Q-5.pdf` - Question page 5
-- `A-6.pdf` - Answer page 6
-
-### 3. Start Development Server
-
-```bash
+# Start development server
 npm run dev
 ```
 
-Open http://localhost:5173 in your browser.
-
-## Project Structure
-
-```
-jotjive-workbook/
-├── src/
-│   ├── components/
-│   │   ├── Handwriting/
-│   │   │   └── CanvasOverlay.tsx    # Handwriting canvas
-│   │   ├── Navigation/
-│   │   │   └── NavigationBar.tsx    # Next/Back controls
-│   │   ├── PageRenderer/
-│   │   │   └── PDFRenderer.tsx      # PDF.js integration
-│   │   └── Pages/
-│   │       ├── CoverPage.tsx        # Workbook cover
-│   │       ├── TeachingPage.tsx     # T pages
-│   │       ├── QuestionPage.tsx     # Q pages
-│   │       └── AnswerPage.tsx       # A pages (redisplay)
-│   ├── context/
-│   │   └── SessionContext.tsx       # State management
-│   ├── types/
-│   │   └── index.ts                 # TypeScript definitions
-│   └── App.tsx                      # Main application
-└── public/workbooks/JJ05SS02/       # Workbook assets
-```
-
-## Page Types
-
-| Type | Code | Description | Writing | Answer Display |
-|------|------|-------------|---------|----------------|
-| Cover | COVER | Workbook cover | No | No |
-| Teaching | T | Content presentation | Optional | No |
-| Practice | P | Writing practice | Required | No |
-| Question | Q | Student answers | Required | No |
-| Answer | A | Self-check | No | Yes (redisplay) |
-| Game | G | Activities | Required | No |
-
-## Navigation Behavior
-
-### Q → A Flow
-1. Student writes answer on Q page
-2. Clicks "Next" → advances to A page
-3. A page shows PDF with student's handwriting overlaid
-4. Handwriting is preserved during forward navigation
-
-### Back Navigation
-1. Student clicks "Back" on A page
-2. Handwriting on A page is cleared
-3. Handwriting on related Q page is cleared
-4. Student returns to Q page with empty canvas
-
-## Configuration
-
-Edit `src/App.tsx` to modify the workbook configuration:
-
-```typescript
-const WORKBOOK_CONFIG: Workbook = {
-  id: 'JJ05SS02',
-  pages: [
-    {
-      id: 'Q-5',
-      type: PageType.Q,
-      relatedPage: 'A-6',  // Links to answer page
-      // ...
-    },
-    {
-      id: 'A-6',
-      type: PageType.A,
-      // ...
-    }
-  ]
-};
-```
-
-## Input Modes
-
-The CanvasOverlay supports three modes:
-
-- **write** - Accepts stylus input, renders strokes
-- **read** - No input, no display (static content)
-- **redisplay** - No input, shows saved strokes (answer pages)
-
-## Browser Support
-
-- Chrome/Edge 90+
-- Safari 14+
-- Firefox 88+
-
-Requires Pointer Events API support for stylus input.
-
-## Development
+The app will be available at `http://localhost:5173`
 
 ### Build for Production
 
@@ -134,12 +67,123 @@ Requires Pointer Events API support for stylus input.
 npm run build
 ```
 
-### Preview Production Build
+The built files will be in the `dist` directory.
 
-```bash
-npm run preview
+## 📁 Project Structure
+
+```
+jotjive-workbook/
+├── public/
+│   ├── covers/          # Workbook cover images by category
+│   │   ├── LA/          # Language Arts
+│   │   ├── MA/          # Math
+│   │   ├── SC/          # Science
+│   │   ├── SS/          # Social Studies
+│   │   ├── A/           # PreK
+│   │   ├── R/           # Kindergarten
+│   │   ├── L/           # Life Skills
+│   │   ├── FR/          # French Kindergarten
+│   │   ├── FA/          # French Advanced
+│   │   ├── SEA/         # Special Education
+│   │   ├── FCT/         # Flashcard Tablet
+│   │   └── FCP/         # Flashcard Phone
+│   ├── workbooks/       # PDF workbooks by category
+│   ├── flashcards/      # Flashcard PDFs
+│   │   ├── tablet/
+│   │   └── phone/
+│   └── flags/           # Language flag images
+├── src/
+│   ├── components/
+│   │   ├── Handwriting/ # Canvas and handwriting tools
+│   │   ├── Navigation/  # Navigation bar
+│   │   ├── Pages/       # Page components
+│   │   ├── Language/    # Language selector
+│   │   └── Layout/      # Layout components
+│   ├── config/          # Configuration files
+│   ├── context/         # React context
+│   ├── types/           # TypeScript types
+│   └── utils/           # Utility functions
+└── vercel.json          # Vercel deployment config
 ```
 
-## License
+## 🎮 Usage
 
-© 2026 USA Bilingual, LLC. All Rights Reserved.
+### Selecting Content
+1. Choose **Mode**: Workbooks, Flashcard Tablet, or Flashcard Phone
+2. Filter by **Category**, **Grade**, and **Subject** (for workbooks)
+3. Click on a workbook/flashcard to open
+
+### Navigation Flow
+1. **Selector** → Choose your content
+2. **Wrapper** → Branding screen
+3. **Cover** → View workbook details
+4. **Pages** → Interactive content with handwriting
+
+### Handwriting
+- Use stylus or finger to write on pages
+- Toggle eraser mode to erase strokes
+- Erase single page or entire workbook
+- Handwriting persists across page navigation
+
+## 🛠️ Tech Stack
+
+- **Framework**: React 18 with TypeScript
+- **Build Tool**: Vite 5
+- **Styling**: Tailwind CSS
+- **PDF Rendering**: PDF.js
+- **Routing**: React Router v7
+- **Icons**: Font Awesome
+- **Deployment**: Vercel
+
+## 📦 Workbook Catalog
+
+### Full Mode (Grades 1-6)
+- **Grades**: 1, 2, 3, 4, 5, 6
+- **Subjects**: LA (Language Arts), MA (Math), SC (Science), SS (Social Studies)
+- **Volumes**: 01, 02, 03
+- **Format**: JJ{Grade}{Subject}{Volume} (e.g., JJ05SS02)
+
+### Simple Mode
+- **PreK (A)**: JJA-01 to JJA-18
+- **Kindergarten (R)**: JJR-01 to JJR-18
+- **Life Skills (L)**: JJL-01 to JJL-03
+- **French K (JJFR)**: JJFR-01 to JJFR-18
+- **French Advanced (JJFA)**: JJFA-01 to JJFA-15
+- **Special Ed (JJSEA)**: JJSEA-01 to JJSEA-18
+
+## 🌐 Deployment
+
+### Vercel (Recommended)
+
+1. Push code to GitHub
+2. Import project in Vercel
+3. Configure:
+   - Framework: Vite
+   - Build Command: `npm run build`
+   - Output Directory: `dist`
+4. Deploy
+
+The app will be live at `https://your-project.vercel.app`
+
+## 📱 Device Requirements
+
+- **Workbooks**: Tablet or Desktop (min 768px width)
+- **Tablet Flashcards**: Tablet or Desktop (min 768px width)
+- **Phone Flashcards**: Phone in landscape mode
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📄 License
+
+© 2026 JotJive, LLC. All rights reserved.
+
+## 🔗 Links
+
+- **Website**: [www.JotJive.com](https://www.JotJive.com)
+- **Repository**: [github.com/Nasir0347/jotjive-workbook](https://github.com/Nasir0347/jotjive-workbook)
+
+---
+
+Built with ❤️ by the JotJive team
