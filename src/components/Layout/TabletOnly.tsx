@@ -7,31 +7,41 @@ interface TabletOnlyProps {
 }
 
 export const TabletOnly: React.FC<TabletOnlyProps> = ({ children }) => {
-    const [isPhone, setIsPhone] = React.useState(
-        window.innerWidth < 768 // Less than 768px is phone
-    );
+    const [deviceInfo, setDeviceInfo] = React.useState(() => {
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        const isPortrait = height > width;
 
-    const [isDesktop, setIsDesktop] = React.useState(
-        window.innerWidth >= 1024 // 1024px and above is desktop
-    );
+        // Detect device type based on screen size
+        // Desktop: width >= 1280px OR height >= 1280px (large screens)
+        // Tablet: 768px <= width < 1280px AND height < 1280px
+        // Phone: width < 768px
+        const isDesktop = width >= 1280 || height >= 1280;
+        const isPhone = width < 768 && height < 768;
+        const isTablet = !isDesktop && !isPhone;
 
-    const [isPortrait, setIsPortrait] = React.useState(
-        window.innerHeight > window.innerWidth
-    );
+        return { isDesktop, isTablet, isPhone, isPortrait };
+    });
 
     React.useEffect(() => {
         const handleResize = () => {
-            setIsPhone(window.innerWidth < 768);
-            setIsDesktop(window.innerWidth >= 1024);
-            setIsPortrait(window.innerHeight > window.innerWidth);
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            const isPortrait = height > width;
+
+            const isDesktop = width >= 1280 || height >= 1280;
+            const isPhone = width < 768 && height < 768;
+            const isTablet = !isDesktop && !isPhone;
+
+            setDeviceInfo({ isDesktop, isTablet, isPhone, isPortrait });
         };
 
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    // If on phone (< 768px), show "Tablet Required" message
-    if (isPhone) {
+    // If on phone, show "Tablet Required" message
+    if (deviceInfo.isPhone) {
         return (
             <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-saas-blue to-blue-700 flex items-center justify-center p-6">
                 <div className="text-center text-white max-w-md">
@@ -50,13 +60,13 @@ export const TabletOnly: React.FC<TabletOnlyProps> = ({ children }) => {
         );
     }
 
-    // If on desktop (>= 1024px), allow any orientation
-    if (isDesktop) {
+    // If on desktop, allow any orientation
+    if (deviceInfo.isDesktop) {
         return <>{children}</>;
     }
 
-    // If on tablet (768px - 1023px) and in landscape mode, show "Rotate to Portrait" message
-    if (!isPortrait) {
+    // If on tablet and in landscape mode, show "Rotate to Portrait" message
+    if (deviceInfo.isTablet && !deviceInfo.isPortrait) {
         return (
             <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-saas-blue to-blue-700 flex items-center justify-center p-6">
                 <div className="text-center text-white max-w-md">
@@ -75,7 +85,7 @@ export const TabletOnly: React.FC<TabletOnlyProps> = ({ children }) => {
         );
     }
 
-    // Tablet in portrait mode - show content
+    // Tablet in portrait mode OR desktop - show content
     return <>{children}</>;
 };
 
